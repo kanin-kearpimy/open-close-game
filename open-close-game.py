@@ -1,130 +1,68 @@
-import re as Regex
-import random
+from Game import Player, OpenCloseGame
 
-class Player:
-    def __init__(self, player, isBot=False):
-        self.player = player
-        self.isBot = isBot
-
-    def playAnswer(self, answer, isPredictor):
-        validate = self.validate(answer, isPredictor)
-        if(validate['status'] == False):
-            return validate
-        self.answer = answer
-        return validate
-
-    def botAnswer(self, isPredictor):
-        if(self.isBot != True):
-            print("You Are not bot !!!")
-            return False
-        ansString = self.generateBotAnswer()
-        if(isPredictor):
-            ansString += str(random.randint(1, 4))
-
-        self.answer = ansString
-
-    def checkAnswer(self):
-        return { 'playerName': self.player, 'playerAnswer': self.answer }
-
-    def isBot(self):
-        return self.isBot
-    
-    def generateBotAnswer(self):
-        ansString = ''
-        for i in range(0, 2):
-            ansString += random.choice('co')
-        return ansString
-
-    def validate(self, answer, predictor):
-        predictorRegex = "^[COco][COco][1-4]"
-        noPredictorRegex = "^[COco][COco]"
-
-        isPass = {"status": True, "message": "Everything is alright."}
-        if(predictor):
-            if( (len(answer) != 3) or Regex.search(predictorRegex, answer) == None):
-                isPass = {"status": False, "message": "You are predictor, please type as format: 'CO2'."}
-        else:
-            if((len(answer) != 2) or Regex.search(noPredictorRegex, answer) == None):
-                isPass = {"status": False, "message": "You are user, please type as format: 'CC'."}
-
-        return isPass
-
-class OpenCloseGame:
-    def __init__(self):
-        self.setPlayerPredictor = True
-        self.historyTurn = []
-
-    def checkWinner(self, answer1, answer2):
-        allAnswer = (answer1 + answer2).lower()
-        allAnswerSorted = self.sortStringFollowedByNumber(allAnswer)
-        prediction = allAnswerSorted[-1]
-        result = {}
-
-        if(int(allAnswerSorted.count('o')) == int(prediction)):
-            if(self.setPlayerPredictor):
-                result = {
-                    'gotWinner': True,
-                    'playerWin': self.setPlayerPredictor,
-                    'message': 'The Winner is PLAYER'
-                }
-            else:
-                result = {
-                    'gotWinner': True,
-                    'playerWin': self.setPlayerPredictor,
-                    'message': 'The Winner is BOT'
-                }
-        else:
-            result = {
-                'gotWinner': False
-            }
-            self.setPlayerPred()
-
-        return result
-
-    def setPlayerPred(self):
-        self.setPlayerPredictor = not self.setPlayerPredictor
-
-
-    def sortStringFollowedByNumber(self, string):
-        alphas = []
-        digits = []
-        result = ''
-
-        for character in string:
-            if(character.isalpha()):
-                alphas.append(character)
-            else:
-                digits.append(character)
-        
-        result = ''.join(alphas+digits)
-
-        return result
-    
-
-
-bot = Player('bot', isBot=True)
-player_1 = Player('player_1', isBot=False)
-playerPredictor = True
-game = OpenCloseGame()
+# Game Introduction
+print('\n')
+print('==========')
+print('\n')
+print('   Welcome to Open Close Game    ')
+print('\n   To play the game, after a count of three, the players will need to simultaneously show their hands with each hand either open or closed, and the predictor need to shout out how many hands they think will be open on total.  ')
+print('\n   If the predictor is correct, they win, otherwise the other player becomes the predictor and they go again. This continues until the game is won.   ')
+print('\n')
+print('==========')
 
 while True:
-    playerAnswerInput = input()
+    # Selection of Choice
+    print('Please type number below to choose.')
+    print('\n 1 Play Game Now!')
+    print('\n 2 Read the rule.')
+    print('\n 3 Exit Program.')
+    print('\nWould you like to: ')
+    userSelect = input()
 
-    play_1_ans = player_1.playAnswer(playerAnswerInput, playerPredictor)
+    if(int(userSelect) == 1):
+        bot = Player('bot', isBot=True)
+        player_1 = Player('player_1', isBot=False)
+        game = OpenCloseGame(player_1, bot)
 
-    if(play_1_ans['status'] != True):
-        print(play_1_ans['message'])
-        continue
+        while True:
+            result = game.startGame()
+            if(result):
+                break
+            else:
+                continue
 
-    bot.botAnswer(not playerPredictor)
+    elif(int(userSelect) == 2):
+        print('==========')
+        print('\nthe players will need to simultaneously show their hands with each hand either open or closed, and the predictor need to shout out how many hands they think will be open on total.')
+        print('\nIf the predictor is correct, they win, otherwise the other player becomes the predictor and they go again. This continues until the game is won.')
+        print('\n')
+        print('the first two characters will show how you will play your hands, O for open or C for closed.')
+        print('\nIf you are the predictor, you also need to enter a third character which is your prediction for how many open hands in total. [0 - 4]')
+        print('\nFor example; player 1 as predictor and player 2 as player in this round')
+        print('\n player 1: "cc1"')
+        print('\n player 2: "co"')
+        print('\n Player 1 win because one hand open')
+        print('\n')
 
-    print("Player Answer is: " + player_1.checkAnswer()['playerAnswer'])
-    print("Bot Answer is: " + bot.checkAnswer()['playerAnswer'])
+        while True:
+            print('==========')
+            print('\n Would you like to exit to menu? ')
+            print('\n 1 Yes')
+            print('\n 2 No')
 
-    gameResult = game.checkWinner(player_1.checkAnswer()['playerAnswer'], bot.checkAnswer()['playerAnswer'])
-    
-    if(gameResult['gotWinner']):
-        print(gameResult['message'])
+            userSelect = input()
+
+            if(int(userSelect) == 1):
+                break
+            elif(int(userSelect) == 2):
+                print('\nYou can choose only 1) Yes\n')
+                continue
+            else:
+                print('\nYou can choose only 1) Yes or 2) No\n')
+                continue
+    elif(int(userSelect) == 3):
+        print('\n Goodbye and See you again soon.')
         break
-
-    playerPredictor = not playerPredictor
+    else:
+        print('\nBad Input: You have only 3 choices\n')
+        continue
